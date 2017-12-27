@@ -30,9 +30,12 @@ class LineAnalyzer
   #* identify the words that were used the maximum number of times and
   #  store that in the highest_wf_words attribute.
   def calculate_word_frequency
-    res = @content.split(" ").each_with_object(Hash.new(0)) { |word, count| count[word] += 1 }
-    @highest_wf_count = res.sort{|a,b| a[1] <=> b[1]}.last.last
-    @highest_wf_words << res.sort_by {|k,v| v}.reverse.first.first
+    hash = Hash.new(0)
+    @content.split.each do |word|
+      hash[word.downcase] += 1
+    end
+    @highest_wf_count = hash.values.max
+    @highest_wf_words.concat hash.select{|k, v| v == @highest_wf_count}.keys
   end
 end
 
@@ -62,9 +65,17 @@ class Solution
   end
 
   def print_highest_word_frequency_across_lines
+    puts "The following words have the highest word frequency per line:"
+    @highest_count_words_across_lines.each{|value| print value.highest_wf_words, " (appears in line ", value.line_number, ")\n"}
   end
 
   def calculate_line_with_highest_frequency
+    @highest_count_words_across_lines = []
+    words = analyzers.max_by do |value|
+      value.highest_wf_count
+    end
+    @highest_count_across_lines = words.highest_wf_count
+    @highest_count_words_across_lines = analyzers.select{|value| value.highest_wf_count == @highest_count_across_lines}
   end
 
   # Implement the analyze_file() method() to:
